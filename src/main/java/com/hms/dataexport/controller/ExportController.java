@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * 根据sql导出excel
- * gaoyuhang
+ * @author gaoyuhang
  */
 @Controller
 @RequestMapping(value = "/data")
@@ -36,7 +36,10 @@ public class ExportController {
     private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
     private static final String MESSAGE_FIELDS_NULL = "文件名或执行SQL不能为空";
     private static final String MESSAGE_NO_RECORD = "查询无结果集。";
+    private static final String MESSAGE_ILLEGAL_KEYWORDS = "此SQL并不是查询语句。";
     private static final String FILE_SUFFIX = ".xls";
+    private static final String SQL_PREFIX = "SELECT";
+    private static final String DATE_FORMATE_YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
 
     @Inject
     private ExportService exportService;
@@ -59,16 +62,22 @@ public class ExportController {
         ExecuteResult result = new ExecuteResult();
         String fileName = request.getParameter("fileName");
         String executeSql = request.getParameter("executeSql");
-        if(StringUtils.isBlank(fileName) || StringUtils.isBlank(executeSql)) {
+        if (StringUtils.isBlank(fileName) || StringUtils.isBlank(executeSql)) {
             result.setStatus(false);
             result.setResult(MESSAGE_FIELDS_NULL);
             return JSON.toJSONString(result);
         }
+        String checkSql = executeSql.trim().toUpperCase();
+        if (!checkSql.startsWith(SQL_PREFIX)) {
+            result.setStatus(false);
+            result.setResult(MESSAGE_ILLEGAL_KEYWORDS);
+            return JSON.toJSONString(result);
+        }
         LOG.info(executeSql);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMATE_YYYYMMDDHHMMSS);
         fileName += sdf.format(new Date()) + FILE_SUFFIX;
         List<LinkedHashMap<String, Object>> resultMapList = exportService.findRecords(executeSql);
-        if(resultMapList == null || resultMapList.size() == 0) {
+        if (resultMapList == null || resultMapList.size() == 0) {
             result.setStatus(false);
             result.setResult(MESSAGE_NO_RECORD);
             return JSON.toJSONString(result);
@@ -107,7 +116,6 @@ public class ExportController {
         //遍历map中的键
         int cellIndex = 0;
         for (Object key : tilteMap.keySet()) {
-            System.out.println("Key = " + key);
             cell = row.createCell(cellIndex);
             cell.setCellValue(key != null ? key.toString() : null);
             cellIndex++;
