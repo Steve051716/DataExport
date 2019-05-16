@@ -98,7 +98,7 @@ public class ExportController {
             rowNum++;
         }
         //生成excel文件
-        buildExcelFile(fileName, workbook);
+        // buildExcelFile(fileName, workbook);
         //浏览器下载excel
         buildExcelDocument(fileName,workbook,response);
         return null;
