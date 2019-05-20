@@ -83,12 +83,12 @@ public class ExportController {
             return JSON.toJSONString(result);
         }
         HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = workbook.createSheet("result");
-        createTitle(workbook, sheet, resultMapList.get(0));
+        HSSFSheet resultSheet = workbook.createSheet("result");
+        createTitle(workbook, resultSheet, resultMapList.get(0));
         //新增数据行，并且设置单元格数据
         int rowNum=1;
         for(Map<String, Object> resultMap : resultMapList){
-            HSSFRow row = sheet.createRow(rowNum);
+            HSSFRow row = resultSheet.createRow(rowNum);
             int cellIndex = 0;
             //遍历map中的值
             for (Object value : resultMap.values()) {
@@ -97,6 +97,9 @@ public class ExportController {
             }
             rowNum++;
         }
+        HSSFSheet sqlSheet = workbook.createSheet("SQL");
+        HSSFRow sqlRow = sqlSheet.createRow(0);
+        sqlRow.createCell(0).setCellValue(executeSql);
         //生成excel文件
         // buildExcelFile(fileName, workbook);
         //浏览器下载excel
